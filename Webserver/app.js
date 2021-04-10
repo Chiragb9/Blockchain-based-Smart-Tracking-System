@@ -5,44 +5,47 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require('mongoose');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+//var indexRouter = require('./routes/index');
+//var usersRouter = require('./routes/users');
 
 var app = express();
 const db = require("./keys/key").mongoURI;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//Smart Contract 
+
+//SMART CONTRACT 
 var Web3 = require('web3');
 var HDWalletProvider = require('@truffle/hdwallet-provider');
 var Mycontract = require('./build/contracts/Tracktest.json');
 const { fchmod } = require('fs');
 
-const address1='';
-const privateKey1='';
+const address1='0x4FE2000Fb08B8059e1898ceC0426B6D89228622B';
+const privateKey1='7e6012ab074d4537b844e72405669e967627a8d05a1988b860ea314841a8897c';
 
-const web3 = new Web3('http://localhost:7545');
+//const web3 = new Web3('http://localhost:7545');
 
-/*const provider = new HDWalletProvider(
+const provider = new HDWalletProvider(
     privateKey1,
-    'http://localhost:7545'
-  ) */
+    'https://ropsten.infura.io/v3/06746d1d9cea4f5e87fbaaf33d230f3c'
+  ) 
  
-  //const web3 = new Web3('https://ropsten.infura.io/v3/06746d1d9cea4f5e87fbaaf33d230f3c');
+const web3 = new Web3(provider);
 let contract = null;
 let addresses = null;
 const init = async()=>{
 
-  addresses = await web3.eth.getAccounts();
+  //addresses = await web3.eth.getAccounts();
   //console.log(addresses[0]);
 
-  const id = await web3.eth.net.getId();
+  //const id = await web3.eth.net.getId();
   //console.log(id);
 
   contract = new web3.eth.Contract(
-    Mycontract.abi,
-    Mycontract.networks[id].address
+    Mycontract.abi
+    //Mycontract.networks[id].address
   );
+
+  contract = await contract.deploy({data: Mycontract.bytecode}).send({from: address1});
 
   /*const receipt= await contract.methods.putHashedData('2','jfskvfjssddsv').send({
     from: addresses[0],
@@ -60,6 +63,7 @@ const init = async()=>{
 //init();
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 // view engine setup
 mongoose.connect(db, {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false})
   .then(() => console.log("Connected to MongoDB"))
@@ -75,12 +79,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const sdata = require("./models/sdata");
 
+//INDEX 
 app.get('/', function(req, res, next) {
   res.render('index', { title: 'BE project' });
 });
 
 
-//Posts sensor data - called by hw modu
+//POST SENSOR DATA - called by hw module
 app.post('/putdata', function(req, res, next){
   let {temperature} = req.body;
   let dbid = 0;
@@ -132,7 +137,7 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// error handler
+//ERROR HANDLER
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
