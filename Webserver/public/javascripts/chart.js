@@ -2,6 +2,9 @@
 var ctx = document.getElementById('myChart').getContext('2d');
 //ctx.canvas.parentNode.style.height = '900';
 //ctx.canvas.parentNode.style.width = '900';
+
+let rdata= null;
+
 var myChart = new Chart(ctx, {
     type: 'line',
     data: {

@@ -6,17 +6,32 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-    <script src="/assets/vendor/chart.js/dist/Chart.min.js"></script>
-	<script src="/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+    <!--<script src="/assets/vendor/chart.js/dist/Chart.min.js"></script>-->
+	<!--<script src="/assets/vendor/chart.js/dist/Chart.extension.js"></script>-->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-
-	<link rel="stylesheet" href="/stylesheets/style.css">
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 	
 	<script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPoeF51FpzteWu1STpWfKTLmLWm3A5s7E&callback=initMap&libraries=&v=weekly"
       async
     ></script>  
+
+	<style>
+		
+
+		#map{
+		height: 400px;
+		width: 100%;
+		}
+
+		#myChart{
+		height: 400px;
+		width: 100%;
+		}
+      
+      
+	</style>
     
 </head>
 
@@ -42,12 +57,26 @@
 		            </div>
 		            
 		            <ul class="navbar-nav ml-lg-auto">
-		                <li class="nav-item">
+		                
+						<% if(!currentUser){ %>
+							<li class="nav-item">
+								<a class="nav-link" href="/register">Sign Up</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="/login">Log In</a>
+							</li>
+						<% } %>
+
+						<% if(currentUser){ %>
+							<li class="nav-item">
+								<a class="nav-link" href="/logout">Logout</a>
+							</li>
+						<% } %>
+
+						<li class="nav-item">
 		                    <a class="nav-link" href="#">Alerts<span class="sr-only">(current)</span></a>
 		                </li>
-		                <li class="nav-item">
-		                    <a class="nav-link" href="#">Logout</a>
-		                </li>
+						
 		                <li class="nav-item dropdown">
 		                    <a class="nav-link" href="#" id="navbar-primary_dropdown_1" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Devices</a>
 		                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbar-primary_dropdown_1">
@@ -78,6 +107,39 @@
 			   <div id="map"></div>
 
 			   <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+			   <script>
+				   
+					function initMap() {
+
+						//Options
+						var options = {
+						center: { lat: -34.397, lng: 150.644 },
+						zoom: 8,
+						};
+						
+						//Marker
+						var marker = new google.maps.Marker({
+							position:{lat: -34.397, lng: 150.644},
+							map:map
+						})
+
+						
+						//Info window
+						var infoWindow = new google.maps.InfoWindow({
+							content:'<h1>My Location</h1>'
+						})
+
+						
+						//infoWindow event
+						marker.addListener('click', function(){
+							infoWindow.open(map, marker);
+						})
+						
+
+						//Map Instance
+						var map = new google.maps.Map(document.getElementById("map"), options);
+					}
+			   </script>
 			   
 		   
 			</div>
@@ -95,7 +157,35 @@
 			      <!-- CHART-->
 					<div>
 						<!-- Chart wrapper -->
-						<canvas id="myChart" ></canvas>
+						<!--<canvas id="myChart" ></canvas>-->
+
+						<div id="chart"></div>
+						
+						<script>
+							Plotly.plot('chart',[{
+								y:[30],
+								type:'line'
+							}]);
+							
+							var cnt = 0;
+							setInterval(function(){
+								$.ajax({
+								url: "https://aa63cde43341.ngrok.io/get_temp",
+								success: function(data){
+									Plotly.extendTraces('chart',{ y:[[data]]}, [0]);
+								}
+							});
+								cnt++;
+								if(cnt > 500) {
+									Plotly.relayout('chart',{
+										xaxis: {
+											range: [cnt-500,cnt]
+										}
+									});
+								}
+							},20000);
+						</script>
+						
 					</div>
 			   </div>
 			</div>
@@ -105,7 +195,7 @@
 
 </body>
 
-<script src="/javascripts/map.js"></script>
-<script src="/javascripts/chart.js"></script>
+
+
 
 </html>
